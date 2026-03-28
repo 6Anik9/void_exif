@@ -20,6 +20,9 @@
         footer { border-top: 1px solid #064e3b; background: rgba(5, 5, 5, 0.95); backdrop-filter: blur(5px); }
         .signature { color: #fff; text-decoration: none; font-weight: 700; letter-spacing: 2px; animation: glow 2s ease-in-out infinite alternate; }
         @keyframes glow { from { text-shadow: 0 0 5px #00ff41; } to { text-shadow: 0 0 20px #00ff41; } }
+        /* Scrollbar Styling */
+        #rawLog::-webkit-scrollbar { width: 4px; }
+        #rawLog::-webkit-scrollbar-thumb { background: #064e3b; border-radius: 10px; }
     </style>
 </head>
 <body>
@@ -89,7 +92,6 @@
                 <a href="https://github.com/6anik9" class="social-icon" target="_blank"><i class="fab fa-github"></i></a>
             </div>
         </div>
-        
         <div class="text-center md:text-right">
             <p class="opacity-60">System Architect: 
                 <a href="https://6anik9.github.io/portfolio" target="_blank" class="signature">6ANIK9</a>
@@ -141,15 +143,48 @@
                 base64Image = reader.result;
                 document.getElementById('preview').src = base64Image;
                 document.getElementById('editorUI').classList.remove('hidden');
-                addLog(`RESOURCE_ACQUIRED: ${file.name.toUpperCase()}`);
+                
+                // --- RESET AND START SCAN ---
+                const log = document.getElementById('rawLog');
+                log.innerHTML = "";
+                addLog(`RESOURCE: ${file.name.toUpperCase()}`, "text-white font-bold");
                 addLog(`SIZE: ${(file.size / 1024).toFixed(2)} KB`);
+
+                try {
+                    const exifObj = piexif.load(base64Image);
+                    
+                    // IFD Mapping (Main, Exif, GPS)
+                    const scanTargets = [
+                        { data: exifObj["0th"], label: "--- SYSTEM_HEADER ---", map: { [piexif.ImageIFD.Make]: "MAKE", [piexif.ImageIFD.Model]: "MODEL", [piexif.ImageIFD.Software]: "FIRMWARE", [piexif.ImageIFD.DateTime]: "DATE" } },
+                        { data: exifObj["Exif"], label: "--- OPTIC_DATA ---", map: { [piexif.ExifIFD.ExposureTime]: "EXPOSURE", [piexif.ExifIFD.ISOSpeedRatings]: "ISO_LEVEL", [piexif.ExifIFD.FocalLength]: "FOCAL_LEN" } },
+                        { data: exifObj["GPS"], label: "--- GEOLOCATION ---", map: { [piexif.GPSIFD.GPSLatitude]: "LATITUDE", [piexif.GPSIFD.GPSLongitude]: "LONGITUDE" } }
+                    ];
+
+                    let foundAny = false;
+                    scanTargets.forEach(target => {
+                        let sectionHasData = false;
+                        for (let tag in target.map) {
+                            if (target.data[tag]) {
+                                if (!sectionHasData) { addLog(target.label, "text-blue-400 mt-2"); sectionHasData = true; }
+                                addLog(`${target.map[tag]}: ${target.data[tag]}`);
+                                foundAny = true;
+                                if (tag == piexif.ImageIFD.Software) document.getElementById('softwareTag').value = target.data[tag];
+                            }
+                        }
+                    });
+
+                    if (!foundAny) addLog("STATUS: NO_METADATA_STRINGS_FOUND", "text-yellow-500 mt-2");
+
+                } catch (err) {
+                    addLog("CRITICAL: BINARY_SCAN_FAILED", "text-red-500");
+                }
             };
             reader.readAsDataURL(file);
         };
 
-        function addLog(msg) {
+        function addLog(msg, colorClass = "text-green-500") {
             const div = document.getElementById('rawLog');
-            div.innerHTML += `<p class="border-b border-green-900/10 py-1">> ${msg}</p>`;
+            div.innerHTML += `<p class="${colorClass}">> ${msg}</p>`;
             div.scrollTop = div.scrollHeight;
         }
 
@@ -159,14 +194,14 @@
                 exifObj["0th"][piexif.ImageIFD.Software] = document.getElementById('softwareTag').value;
                 const newImage = piexif.insert(piexif.dump(exifObj), base64Image);
                 download(newImage, "VOID_MODIFIED.jpg");
-                addLog("BINARY_INJECTION: SUCCESSFUL.");
-            } catch (e) { addLog("CRITICAL_ERROR: INJECTION_FAILED."); }
+                addLog("BINARY_INJECTION: SUCCESS", "text-white bg-green-900 px-1 mt-2");
+            } catch (e) { addLog("INJECTION_FAILED", "text-red-500"); }
         }
 
         function nukeMetadata() {
             const cleanImage = piexif.remove(base64Image);
             download(cleanImage, "VOID_NULL_DATA.jpg");
-            addLog("PURGE_COMPLETE: ALL_META_VOIDED.");
+            addLog("PURGE_COMPLETE: DATA_VOIDED", "text-red-500 font-bold mt-2");
         }
 
         function download(data, name) {
