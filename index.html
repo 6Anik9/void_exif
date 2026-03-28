@@ -7,63 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/piexifjs/1.0.6/piexif.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&family=JetBrains+Mono:wght@300;500&display=swap');
-        
-        :root { --neon: #00ff41; --danger: #ff003c; --glass: rgba(0, 8, 4, 0.98); }
-        
-        body { 
-            background: #000; color: var(--neon); font-family: 'JetBrains Mono', monospace; 
-            margin: 0; padding: 0; overflow-x: hidden;
-        }
-
-        .pulse-ring {
-            position: absolute; width: 150px; height: 150px;
-            border: 2px solid var(--neon); border-radius: 50%;
-            animation: ring-pulse 2s cubic-bezier(0.21, 0.53, 0.56, 0.8) infinite;
-            opacity: 0;
-        }
-        @keyframes ring-pulse {
-            0% { transform: scale(0.5); opacity: 0.8; }
-            100% { transform: scale(1.5); opacity: 0; }
-        }
-
-        .logo-main {
-            font-family: 'Orbitron', sans-serif;
-            font-size: 2.5rem; font-weight: 900;
-            letter-spacing: 10px; color: #fff;
-            text-shadow: 0 0 10px var(--neon), 0 0 20px var(--neon);
-            position: relative;
-        }
-
-        .app-container {
-            display: flex; flex-direction: column; min-height: 100vh;
-            padding: 1rem; padding-bottom: 5rem;
-        }
-
-        .glass-panel {
-            background: var(--glass); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(0, 255, 65, 0.15); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.8);
-            border-radius: 4px;
-        }
-
-        input[type="text"], input[type="file"] {
-            background: rgba(0, 20, 10, 0.5); border: 1px solid rgba(0, 255, 65, 0.2);
-            color: var(--neon); padding: 12px; font-size: 12px; transition: 0.3s;
-        }
-        input:focus { border-color: var(--neon); box-shadow: 0 0 10px rgba(0, 255, 65, 0.2); }
-
-        .btn-sci {
-            background: linear-gradient(45deg, #002200, #004400);
-            border: 1px solid var(--neon); color: #fff; font-weight: bold;
-            padding: 15px; text-transform: uppercase; letter-spacing: 2px;
-            clip-path: polygon(0 0, 90% 0, 100% 30%, 100% 100%, 10% 100%, 0 70%);
-            transition: 0.3s; cursor: pointer;
-        }
-        .btn-sci:active { transform: scale(0.95); background: var(--neon); color: #000; }
-
-        #hexBg { position: fixed; inset: 0; z-index: -1; opacity: 0.1; pointer-events: none; }
-    </style>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <canvas id="hexBg"></canvas>
@@ -84,7 +28,7 @@
                 <span id="loadPercent">0%</span>
             </div>
             <div class="h-[2px] w-full bg-green-900/30 overflow-hidden">
-                <div id="progressBar" class="h-full bg-green-400 w-0 transition-all duration-300 shadow-[0_0_10px_#00ff41]"></div>
+                <div id="progressBar"></div>
             </div>
             <div id="bootLog" class="text-[9px] opacity-30 h-12 overflow-hidden italic font-light"></div>
             <button id="launchBtn" class="hidden w-full btn-sci mt-4">INITIALIZE_STRIKE</button>
@@ -106,7 +50,7 @@
                 <input type="file" id="fileIn" accept="image/jpeg" class="w-full">
             </div>
 
-            <div id="controls" class="hidden glass-panel p-5 space-y-4 animate-in fade-in duration-500">
+            <div id="controls" class="hidden glass-panel p-5 space-y-4">
                 <p class="text-[10px] font-bold opacity-40 uppercase tracking-widest">Metadata_Injection</p>
                 <div class="grid grid-cols-1 gap-3">
                     <input type="text" id="tagModel" placeholder="DEVICE_MODEL">
@@ -140,182 +84,10 @@
                 <a href="https://instagram.com/6mdaniksheikh9" target="_blank" class="hover:text-pink-500"><i class="fab fa-instagram"></i></a>
                 <a href="https://facebook.com/6mdaniksheikh9" target="_blank" class="hover:text-blue-500"><i class="fab fa-facebook-f"></i></a>
             </div>
-            <a href="https://6anik9.github.io/portfolio" target="_blank" class="text-[9px] font-black opacity-30 hover:opacity-100 transition">6ANIK9_DEV</a>
+            <a href="https://6anik9.github.io" target="_blank" class="text-[9px] font-black opacity-30 hover:opacity-100 transition">6ANIK9_DEV</a>
         </footer>
     </div>
 
-    <script>
-        const sfxBtn = document.getElementById('sfx-click');
-        const sfxBoot = document.getElementById('sfx-boot');
-        const terminal = document.getElementById('terminal');
-
-        // Matrix Rain Canvas (Visual)
-        const canvas = document.getElementById('hexBg');
-        const ctx = canvas.getContext('2d');
-        let width, height, columns;
-        const chars = "01VOID6ANIK9";
-        const drops = [];
-
-        function initCanvas() {
-            width = canvas.width = window.innerWidth;
-            height = canvas.height = window.innerHeight;
-            columns = Math.floor(width / 20);
-            for(let i=0; i<columns; i++) drops[i] = 1;
-        }
-
-        function drawMatrix() {
-            ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
-            ctx.fillRect(0, 0, width, height);
-            ctx.fillStyle = "#00ff41";
-            ctx.font = "15px monospace";
-            for(let i=0; i<drops.length; i++) {
-                const text = chars[Math.floor(Math.random() * chars.length)];
-                ctx.fillText(text, i * 20, drops[i] * 20);
-                if(drops[i] * 20 > height && Math.random() > 0.975) drops[i] = 0;
-                drops[i]++;
-            }
-        }
-        window.addEventListener('resize', initCanvas);
-        initCanvas();
-        setInterval(drawMatrix, 50);
-
-        // Boot Logic
-        const msgs = ["Decrypting Modules...", "Bypassing Security...", "Allocating Memory...", "EXIF_Kernel_Loaded...", "VOiD_Core_Active."];
-        window.onload = () => {
-            let i = 0, p = 0;
-            const log = document.getElementById('bootLog');
-            const bar = document.getElementById('progressBar');
-            const pct = document.getElementById('loadPercent');
-            
-            const timer = setInterval(() => {
-                p += 20;
-                bar.style.width = p + "%";
-                pct.innerText = p + "%";
-                if(msgs[i]) log.innerHTML += `<div>> ${msgs[i]}</div>`;
-                log.scrollTop = log.scrollHeight;
-                i++;
-                if(p >= 100) {
-                    clearInterval(timer);
-                    document.getElementById('launchBtn').classList.remove('hidden');
-                }
-            }, 500);
-        };
-
-        document.getElementById('launchBtn').onclick = () => {
-            sfxBoot.play();
-            document.getElementById('bootScreen').style.display = 'none';
-            document.getElementById('appUI').classList.remove('hidden');
-            addLog("SYSTEM_READY. AWAITING_PAYLOAD.");
-        };
-
-        // --- POWER ENGINE LOGIC ---
-        let currentImageData = ""; 
-
-        document.getElementById('fileIn').onchange = (e) => {
-            sfxBtn.play();
-            const file = e.target.files[0];
-            if(!file) return;
-
-            addLog(`READING: ${file.name.toUpperCase()}`);
-            const reader = new FileReader();
-            reader.onload = (re) => {
-                currentImageData = re.target.result;
-                document.getElementById('imgPreview').src = currentImageData;
-                document.getElementById('controls').classList.remove('hidden');
-                
-                // Read current metadata for the log
-                try {
-                    const existing = piexif.load(currentImageData);
-                    const model = existing["0th"][piexif.ImageIFD.Model] || "NULL";
-                    const soft = existing["0th"][piexif.ImageIFD.Software] || "NULL";
-                    addLog(`CURRENT_MODEL: ${model}`);
-                    addLog(`CURRENT_SOFT: ${soft}`);
-                } catch(err) {
-                    addLog("NO_EXIF_DETECTED_IN_SOURCE.");
-                }
-            };
-            reader.readAsDataURL(file);
-        };
-
-        function addLog(m) {
-            terminal.innerHTML += `<div>>> ${m}</div>`;
-            terminal.scrollTop = terminal.scrollHeight;
-        }
-
-        function copyLog() {
-            navigator.clipboard.writeText(terminal.innerText);
-            addLog("BUFFER_COPIED_TO_CLIPBOARD.");
-        }
-
-        function injectData() {
-            if(!currentImageData) return addLog("ERROR: NO_PAYLOAD.");
-            sfxBtn.play();
-            addLog("INITIALIZING_INJECTION...");
-
-            try {
-                let exifObj = {"0th":{}, "Exif":{}, "GPS":{}};
-                try { exifObj = piexif.load(currentImageData); } catch(e){}
-
-                // Standard Tags
-                exifObj["0th"][piexif.ImageIFD.Model] = document.getElementById('tagModel').value || "6ANIK9_VOID";
-                exifObj["0th"][piexif.ImageIFD.Software] = document.getElementById('tagSoft').value || "VOiD_v4.0";
-                exifObj["0th"][piexif.ImageIFD.DateTime] = document.getElementById('tagDate').value || "2026:01:01 00:00:00";
-
-                // GPS Logic
-                const gpsInput = document.getElementById('tagGPS').value;
-                if(gpsInput.includes(",")) {
-                    const coords = gpsInput.split(",");
-                    const lat = parseFloat(coords[0]);
-                    const lon = parseFloat(coords[1]);
-                    exifObj["GPS"][piexif.GPSIFD.GPSLatitudeRef] = lat >= 0 ? 'N' : 'S';
-                    exifObj["GPS"][piexif.GPSIFD.GPSLatitude] = piexif.GPSHelper.degToExif(Math.abs(lat));
-                    exifObj["GPS"][piexif.GPSIFD.GPSLongitudeRef] = lon >= 0 ? 'E' : 'W';
-                    exifObj["GPS"][piexif.GPSIFD.GPSLongitude] = piexif.GPSHelper.degToExif(Math.abs(lon));
-                    addLog("GPS_COORDINATES_MAPPED.");
-                }
-
-                const bytes = piexif.dump(exifObj);
-                const final = piexif.insert(bytes, currentImageData);
-                
-                triggerDownload(final, "VOID_MODIFIED.jpg");
-                addLog("INJECTION_SUCCESSFUL.");
-            } catch(e) { 
-                addLog(`FATAL_ERROR: ${e.message}`);
-            }
-        }
-
-        function nukeData() {
-            if(!currentImageData) return addLog("ERROR: NO_TARGET.");
-            sfxBtn.play();
-            addLog("PURGING_ALL_METADATA...");
-            try {
-                const clean = piexif.remove(currentImageData);
-                triggerDownload(clean, "VOID_CLEAN.jpg");
-                addLog("PURGE_COMPLETE.");
-            } catch(e) { 
-                addLog("IMAGE_ALREADY_VOID."); 
-            }
-        }
-
-        function triggerDownload(base64, name) {
-            const byteString = atob(base64.split(',')[1]);
-            const mimeString = base64.split(',')[0].split(':')[1].split(';')[0];
-            const ab = new ArrayBuffer(byteString.length);
-            const ia = new Uint8Array(ab);
-            for (let i = 0; i < byteString.length; i++) {
-                ia[i] = byteString.charCodeAt(i);
-            }
-            const blob = new Blob([ab], {type: mimeString});
-            const url = URL.createObjectURL(blob);
-            
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = name;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            URL.revokeObjectURL(url);
-        }
-    </script>
+    <script src="script.js"></script>
 </body>
 </html>
