@@ -17,7 +17,6 @@
             margin: 0; padding: 0; overflow-x: hidden;
         }
 
-        /* Satisfying Pulse Animation */
         .pulse-ring {
             position: absolute; width: 150px; height: 150px;
             border: 2px solid var(--neon); border-radius: 50%;
@@ -29,7 +28,6 @@
             100% { transform: scale(1.5); opacity: 0; }
         }
 
-        /* Glitch Logo Style */
         .logo-main {
             font-family: 'Orbitron', sans-serif;
             font-size: 2.5rem; font-weight: 900;
@@ -38,7 +36,6 @@
             position: relative;
         }
 
-        /* Mobile Container Fix */
         .app-container {
             display: flex; flex-direction: column; min-height: 100vh;
             padding: 1rem; padding-bottom: 5rem;
@@ -50,7 +47,6 @@
             border-radius: 4px;
         }
 
-        /* Smooth Inputs */
         input[type="text"], input[type="file"] {
             background: rgba(0, 20, 10, 0.5); border: 1px solid rgba(0, 255, 65, 0.2);
             color: var(--neon); padding: 12px; font-size: 12px; transition: 0.3s;
@@ -101,7 +97,7 @@
                 <h1 class="text-xl font-black tracking-tighter text-white">VOiD_EXiF</h1>
                 <p class="text-[8px] opacity-50 tracking-[4px]">SECURED_BY_6ANIK9</p>
             </div>
-            <div class="text-[10px] bg-green-500/10 border border-green-500/30 px-2 py-1">v3.8_STABLE</div>
+            <div class="text-[10px] bg-green-500/10 border border-green-500/30 px-2 py-1">v4.0_POWER</div>
         </header>
 
         <div class="flex flex-col gap-4">
@@ -116,7 +112,7 @@
                     <input type="text" id="tagModel" placeholder="DEVICE_MODEL">
                     <input type="text" id="tagSoft" placeholder="SOFTWARE_SIGN">
                     <input type="text" id="tagDate" placeholder="YYYY:MM:DD HH:MM:SS">
-                    <input type="text" id="tagGPS" placeholder="LAT, LON">
+                    <input type="text" id="tagGPS" placeholder="LAT, LON (e.g. 23.8, 90.4)">
                 </div>
                 <div class="grid grid-cols-2 gap-3">
                     <button onclick="injectData()" class="btn-sci text-[10px]">INJECT</button>
@@ -151,8 +147,9 @@
     <script>
         const sfxBtn = document.getElementById('sfx-click');
         const sfxBoot = document.getElementById('sfx-boot');
+        const terminal = document.getElementById('terminal');
 
-        // Matrix Rain Canvas
+        // Matrix Rain Canvas (Visual)
         const canvas = document.getElementById('hexBg');
         const ctx = canvas.getContext('2d');
         let width, height, columns;
@@ -183,7 +180,7 @@
         setInterval(drawMatrix, 50);
 
         // Boot Logic
-        const msgs = ["Syncing Node...", "Handshaking...", "Memory Mapping...", "AES_Ready...", "VOiD_Core_Online."];
+        const msgs = ["Decrypting Modules...", "Bypassing Security...", "Allocating Memory...", "EXIF_Kernel_Loaded...", "VOiD_Core_Active."];
         window.onload = () => {
             let i = 0, p = 0;
             const log = document.getElementById('bootLog');
@@ -194,72 +191,130 @@
                 p += 20;
                 bar.style.width = p + "%";
                 pct.innerText = p + "%";
-                log.innerHTML += `<div>> ${msgs[i]}</div>`;
+                if(msgs[i]) log.innerHTML += `<div>> ${msgs[i]}</div>`;
                 log.scrollTop = log.scrollHeight;
                 i++;
                 if(p >= 100) {
                     clearInterval(timer);
                     document.getElementById('launchBtn').classList.remove('hidden');
                 }
-            }, 600);
+            }, 500);
         };
 
         document.getElementById('launchBtn').onclick = () => {
             sfxBoot.play();
             document.getElementById('bootScreen').style.display = 'none';
             document.getElementById('appUI').classList.remove('hidden');
+            addLog("SYSTEM_READY. AWAITING_PAYLOAD.");
         };
 
-        // EXIF Logic
-        let rawBase64 = "";
+        // --- POWER ENGINE LOGIC ---
+        let currentImageData = ""; 
+
         document.getElementById('fileIn').onchange = (e) => {
             sfxBtn.play();
             const file = e.target.files[0];
             if(!file) return;
+
+            addLog(`READING: ${file.name.toUpperCase()}`);
             const reader = new FileReader();
             reader.onload = (re) => {
-                rawBase64 = re.target.result;
-                document.getElementById('imgPreview').src = rawBase64;
+                currentImageData = re.target.result;
+                document.getElementById('imgPreview').src = currentImageData;
                 document.getElementById('controls').classList.remove('hidden');
-                addLog(`TARGET: ${file.name.toUpperCase()}`);
+                
+                // Read current metadata for the log
+                try {
+                    const existing = piexif.load(currentImageData);
+                    const model = existing["0th"][piexif.ImageIFD.Model] || "NULL";
+                    const soft = existing["0th"][piexif.ImageIFD.Software] || "NULL";
+                    addLog(`CURRENT_MODEL: ${model}`);
+                    addLog(`CURRENT_SOFT: ${soft}`);
+                } catch(err) {
+                    addLog("NO_EXIF_DETECTED_IN_SOURCE.");
+                }
             };
             reader.readAsDataURL(file);
         };
 
         function addLog(m) {
-            const t = document.getElementById('terminal');
-            t.innerHTML += `<div>>> ${m}</div>`;
-            t.scrollTop = t.scrollHeight;
+            terminal.innerHTML += `<div>>> ${m}</div>`;
+            terminal.scrollTop = terminal.scrollHeight;
         }
 
         function copyLog() {
-            navigator.clipboard.writeText(document.getElementById('terminal').innerText);
-            addLog("BUFFER_COPIED.");
+            navigator.clipboard.writeText(terminal.innerText);
+            addLog("BUFFER_COPIED_TO_CLIPBOARD.");
         }
 
         function injectData() {
+            if(!currentImageData) return addLog("ERROR: NO_PAYLOAD.");
             sfxBtn.play();
+            addLog("INITIALIZING_INJECTION...");
+
             try {
-                let obj = {"0th":{}, "Exif":{}, "GPS":{}};
-                try { obj = piexif.load(rawBase64); } catch(e){}
-                obj["0th"][piexif.ImageIFD.Model] = document.getElementById('tagModel').value || "6ANIK9_VOID";
-                obj["0th"][piexif.ImageIFD.Software] = "VOiD_EXiF_3.8";
-                const bytes = piexif.dump(obj);
-                const final = piexif.insert(bytes, rawBase64);
-                const link = document.createElement('a');
-                link.href = final; link.download = "VOID_MOD.jpg"; link.click();
-                addLog("INJECTION_SUCCESS.");
-            } catch(e) { addLog("FAIL: EXIF_ERR."); }
+                let exifObj = {"0th":{}, "Exif":{}, "GPS":{}};
+                try { exifObj = piexif.load(currentImageData); } catch(e){}
+
+                // Standard Tags
+                exifObj["0th"][piexif.ImageIFD.Model] = document.getElementById('tagModel').value || "6ANIK9_VOID";
+                exifObj["0th"][piexif.ImageIFD.Software] = document.getElementById('tagSoft').value || "VOiD_v4.0";
+                exifObj["0th"][piexif.ImageIFD.DateTime] = document.getElementById('tagDate').value || "2026:01:01 00:00:00";
+
+                // GPS Logic
+                const gpsInput = document.getElementById('tagGPS').value;
+                if(gpsInput.includes(",")) {
+                    const coords = gpsInput.split(",");
+                    const lat = parseFloat(coords[0]);
+                    const lon = parseFloat(coords[1]);
+                    exifObj["GPS"][piexif.GPSIFD.GPSLatitudeRef] = lat >= 0 ? 'N' : 'S';
+                    exifObj["GPS"][piexif.GPSIFD.GPSLatitude] = piexif.GPSHelper.degToExif(Math.abs(lat));
+                    exifObj["GPS"][piexif.GPSIFD.GPSLongitudeRef] = lon >= 0 ? 'E' : 'W';
+                    exifObj["GPS"][piexif.GPSIFD.GPSLongitude] = piexif.GPSHelper.degToExif(Math.abs(lon));
+                    addLog("GPS_COORDINATES_MAPPED.");
+                }
+
+                const bytes = piexif.dump(exifObj);
+                const final = piexif.insert(bytes, currentImageData);
+                
+                triggerDownload(final, "VOID_MODIFIED.jpg");
+                addLog("INJECTION_SUCCESSFUL.");
+            } catch(e) { 
+                addLog(`FATAL_ERROR: ${e.message}`);
+            }
         }
 
         function nukeData() {
+            if(!currentImageData) return addLog("ERROR: NO_TARGET.");
             sfxBtn.play();
+            addLog("PURGING_ALL_METADATA...");
             try {
-                const final = piexif.remove(rawBase64);
-                const link = document.createElement('a');
-                link.href = final; link.download = "VOID_CLEAN.jpg"; link.click();
+                const clean = piexif.remove(currentImageData);
+                triggerDownload(clean, "VOID_CLEAN.jpg");
                 addLog("PURGE_COMPLETE.");
-            } catch(e) { addLog("ALREADY_VOID."); }
+            } catch(e) { 
+                addLog("IMAGE_ALREADY_VOID."); 
+            }
+        }
+
+        function triggerDownload(base64, name) {
+            const byteString = atob(base64.split(',')[1]);
+            const mimeString = base64.split(',')[0].split(':')[1].split(';')[0];
+            const ab = new ArrayBuffer(byteString.length);
+            const ia = new Uint8Array(ab);
+            for (let i = 0; i < byteString.length; i++) {
+                ia[i] = byteString.charCodeAt(i);
+            }
+            const blob = new Blob([ab], {type: mimeString});
+            const url = URL.createObjectURL(blob);
+            
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = name;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
         }
     </script>
 </body>
