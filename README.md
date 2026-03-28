@@ -43,7 +43,7 @@ Following the same security standards as **Career Canvas**, all operations are e
 
 [![GitHub](https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white)](https://github.com/6anik9)
 [![Instagram](https://img.shields.io/badge/Instagram-E4405F?style=for-the-badge&logo=instagram&logoColor=white)](https://instagram.com/6mdaniksheikh9)
-[![Portfolio](https://img.shields.io/badge/Portfolio-6ANIK9_DEV-00ff41?style=for-the-badge)](https://6anik9.github.io)
+[![Portfolio](https://img.shields.io/badge/Portfolio-6ANIK9_DEV-00ff41?style=for-the-badge)](https://6anik9.github.io/portfolio)
 
 ---
 
