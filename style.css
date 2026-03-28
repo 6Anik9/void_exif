@@ -1,0 +1,62 @@
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&family=JetBrains+Mono:wght@300;500&display=swap');
+
+:root { --neon: #00ff41; --danger: #ff003c; --glass: rgba(0, 8, 4, 0.98); }
+
+body { 
+    background: #000; color: var(--neon); font-family: 'JetBrains Mono', monospace; 
+    margin: 0; padding: 0; overflow-x: hidden;
+}
+
+#hexBg { position: fixed; inset: 0; z-index: -1; opacity: 0.1; pointer-events: none; }
+
+/* Satisfying Pulse Animation */
+.pulse-ring {
+    position: absolute; width: 150px; height: 150px;
+    border: 2px solid var(--neon); border-radius: 50%;
+    animation: ring-pulse 2s cubic-bezier(0.21, 0.53, 0.56, 0.8) infinite;
+    opacity: 0;
+}
+@keyframes ring-pulse {
+    0% { transform: scale(0.5); opacity: 0.8; }
+    100% { transform: scale(1.5); opacity: 0; }
+}
+
+.logo-main {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 2.5rem; font-weight: 900;
+    letter-spacing: 10px; color: #fff;
+    text-shadow: 0 0 10px var(--neon), 0 0 20px var(--neon);
+    position: relative;
+}
+
+#progressBar {
+    height: 100%; width: 0; background: var(--neon);
+    transition: all 0.3s; box-shadow: 0 0 10px var(--neon);
+}
+
+.app-container {
+    display: flex; flex-direction: column; min-height: 100vh;
+    padding: 1rem; padding-bottom: 5rem;
+}
+
+.glass-panel {
+    background: var(--glass); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(0, 255, 65, 0.15); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.8);
+    border-radius: 4px;
+}
+
+input[type="text"], input[type="file"] {
+    background: rgba(0, 20, 10, 0.5); border: 1px solid rgba(0, 255, 65, 0.2);
+    color: var(--neon); padding: 12px; font-size: 12px; transition: 0.3s; width: 100%;
+    outline: none;
+}
+input:focus { border-color: var(--neon); box-shadow: 0 0 10px rgba(0, 255, 65, 0.2); }
+
+.btn-sci {
+    background: linear-gradient(45deg, #002200, #004400);
+    border: 1px solid var(--neon); color: #fff; font-weight: bold;
+    padding: 15px; text-transform: uppercase; letter-spacing: 2px;
+    clip-path: polygon(0 0, 90% 0, 100% 30%, 100% 100%, 10% 100%, 0 70%);
+    transition: 0.3s; cursor: pointer; width: 100%;
+}
+.btn-sci:active { transform: scale(0.95); background: var(--neon); color: #000; }
